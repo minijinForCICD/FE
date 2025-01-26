@@ -1,10 +1,18 @@
-# Getting Started with Create React App
+# 프로젝트 구조
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
-## Available Scripts
-
-In the project directory, you can run:
+- layouts: 페이지 레이아웃 템플릿 (header, footer, sidebar 등)을 관리
+- auth: 인증/인가 관련 로직을 모듈화
+- pages: 각 라우트에 해당하는 페이지 컴포넌트들을 구조화
+- types: TypeScript 타입 정의들을 중앙 관리
+- components: 재사용 가능한 컴포넌트들을 구조화
+- assets: 정적 파일들을 관리
+- styles: 전역 스타일들을 관리
+- config: 프로젝트 설정 파일들을 관리
+- api: 서버 API 호출 로직을 관리
+- constants: 프로젝트 상수들을 관리
+- contexts: React Context API를 사용하여 상태 관리를 구조화
+- hooks: 재사용 가능한 훅들을 구조화
+- utils: 재사용 가능한 유틸리티 함수들을 구조화
 
 ### `npm start`
 
