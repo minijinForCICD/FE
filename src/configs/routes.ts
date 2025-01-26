@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazy, ComponentType } from 'react';
 
 const Home = lazy(() => import('../pages/Home'));
 const About = lazy(() => import('../pages/About'));
@@ -10,7 +10,12 @@ const Arena = lazy(() => import('../pages/Arena'));
 const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
 
-export const routes = [
+interface RouteConfig {
+  path: string;
+  element: ComponentType;
+}
+
+export const routes: RouteConfig[] = [
   { path: '/', element: Home },
   { path: '/about', element: About },
   { path: '/bookcase', element: Bookcase },
@@ -19,5 +24,5 @@ export const routes = [
   { path: '/quest', element: Quest },
   { path: '/arena', element: Arena },
   { path: '/login', element: Login },
-  { path: '/register', element: Register },
+  { path: '/register', element: Register }
 ];
