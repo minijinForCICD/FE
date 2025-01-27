@@ -5,11 +5,12 @@ import { ThemeProvider } from './components/common/ThemeProvider';
 import { Header } from './components/common/Header';
 import { routes } from './configs/routes';
 
+
 const App = () => {
     return (
       <BrowserRouter>
         <ThemeProvider>
-          <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-200">
+          <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-1200">
             <Header />
             <main className="container mx-auto px-4 py-8 pt-20"> {/* pt-20 추가 */}
               <Suspense fallback={<div>Loading...</div>}>
