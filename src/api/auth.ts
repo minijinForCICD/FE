@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AuthTokens, LoginCredentials, User } from '../types/auth';
+import { AuthTokens, LoginCredentials, RegisterCredentials, User } from '../types/auth';
 
 const API_URL = import.meta.env.VITE_BACKEND_API_URL;
 const API_VERSION = import.meta.env.VITE_BACKEND_API_VERSION;
@@ -26,4 +26,18 @@ export const logout = async () => {
 export const getUser = async (): Promise<User> => {
   const { data } = await authApi.get<User>('/me');
   return data;
+};
+
+// export const register = async (credentials: RegisterCredentials): Promise<AuthTokens> => {
+//     const { data } = await authApi.post<AuthTokens>('/register', credentials);
+//     return data;
+// };
+  
+export const googleLogin = async (googleToken: string): Promise<AuthTokens> => {
+const { data } = await authApi.post<AuthTokens>('/google-auth', { token: googleToken });
+return data;
+};
+
+export const register = async (credentials: RegisterCredentials): Promise<void> => {
+await authApi.post('/register', credentials);
 };

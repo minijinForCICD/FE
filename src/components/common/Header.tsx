@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
 import { User } from 'lucide-react';
 
@@ -15,7 +15,7 @@ const navigation = [
 
 export const Header = () => {
   const location = useLocation();
-
+  const navigate = useNavigate();
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4">
@@ -40,7 +40,7 @@ export const Header = () => {
             <ThemeToggle />
             <div className="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
               <span>Lyckabc</span>
-              <User size={20} />
+              <User size={20} className="cursor-pointer" onClick={() => navigate('/login')}/>
             </div>
           </div>
         </div>

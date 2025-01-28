@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, AuthTokens } from '../types/auth';
+import { User, AuthTokens, RegisterCredentials } from '../types/auth';
 import * as authApi from '../api/auth';
 
 interface AuthState {
@@ -13,6 +13,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshTokens: () => Promise<boolean>;
+  register: (credentials: RegisterCredentials) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -25,6 +26,19 @@ export const useAuthStore = create<AuthState>()(
       isLoading: true,
       
       setLoading: (loading: boolean) => set({ isLoading: loading }),
+
+      register: async (credentials: RegisterCredentials) => {
+        try {
+          set({ isLoading: true });
+          await authApi.register(credentials);
+        } catch (error) {
+          console.error('Registration failed:', error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+      
 
       login: async (email: string, password: string) => {
         try {
