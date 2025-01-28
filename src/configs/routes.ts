@@ -16,13 +16,13 @@ interface RouteConfig {
 }
 
 export const routes: RouteConfig[] = [
-  { path: '/', element: Home },
-  { path: '/about', element: About },
-  { path: '/bookcase', element: Bookcase },
-  { path: '/calendar', element: Calendar },
-  { path: '/map', element: Map },
-  { path: '/quest', element: Quest },
-  { path: '/arena', element: Arena },
-  { path: '/login', element: Login },
-  { path: '/register', element: Register }
+  { path: '/', element: Home},
+  { path: '/about', element: About},
+  { path: '/bookcase', element: Bookcase},
+  { path: '/calendar', element: Calendar},
+  { path: '/map', element: Map},
+  { path: '/quest', element: Quest},
+  { path: '/arena', element: Arena},
+  { path: '/login', element: Login},
+  { path: '/register', element: Register},
 ];
