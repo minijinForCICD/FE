@@ -3,22 +3,32 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageLayout } from '../layouts/PageLayout';
 import { useAuthStore } from '../states/authStore';
+import { RegisterCredentials } from '../types/auth';
 
-interface RegisterFormData {
-  email: string;
-  password: string;
+// 프론트엔드 폼용 확장 인터페이스
+interface RegisterFormData extends RegisterCredentials {
   confirmPassword: string;
-  username: string;
 }
 
 const Register = () => {
+  const BACKEND_API_URL = import.meta.env.VITE_API_URL;
+  const BACKEND_API_VERSION = import.meta.env.VITE_BACKEND_API_VERSION;
+  const BACKEND_API_REGISTER_URL = `${BACKEND_API_URL}${BACKEND_API_VERSION}/auth/register`;
   const navigate = useNavigate();
   const { register: registerUser } = useAuthStore();
-  const { register, handleSubmit, formState: { errors }, watch } = useForm<RegisterFormData>();
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<RegisterFormData>({
+    defaultValues: {
+      role: 'user' // 기본값으로 'user' 설정
+    }
+  });
+
+  const password = watch('password'); // 비밀번호 필드 감시
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      await registerUser(data);
+      // RegisterCredentials 타입에 맞게 confirmPassword 제외하고 전송
+      const { confirmPassword, ...registerData } = data;
+      await registerUser(registerData);
       navigate('/login');
     } catch (error) {
       console.error('Registration failed:', error);
@@ -27,8 +37,7 @@ const Register = () => {
 
   const handleGoogleLogin = async () => {
     // Google OAuth URL - 실제 URL로 교체 필요
-    const BACKEND_API_VERSION = import.meta.env.VITE_BACKEND_API_VERSION;
-    const GOOGLE_AUTH_URL = `${import.meta.env.VITE_API_URL}${BACKEND_API_VERSION}/auth/google`;
+    const GOOGLE_AUTH_URL = `${BACKEND_API_URL}${BACKEND_API_VERSION}/auth/google`;
     window.location.href = GOOGLE_AUTH_URL;
   };
 
@@ -106,7 +115,8 @@ const Register = () => {
               type="password"
               {...register('confirmPassword', { 
                 required: 'Please confirm your password',
-                validate: value => value === watch('password') || 'Passwords do not match'
+                validate: value => 
+                  value === password || 'Passwords do not match'
               })}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />

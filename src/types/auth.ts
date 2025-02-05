@@ -1,13 +1,18 @@
 export interface User {
-    id: string;
-    username: string;
+    id: number;
     email: string;
+    username: string;
+    avatar?: string;
+    role: 'user' | 'admin';
   }
   
-  export interface AuthTokens {
+  export interface AuthResponse {
+    user: User;
     accessToken: string;
     refreshToken: string;
-  }
+    accessTokenExpiresIn: number;
+    refreshTokenExpiresIn: number;
+  }  
   
   export interface LoginCredentials {
     email: string;
@@ -15,9 +20,9 @@ export interface User {
   }
 
   export interface RegisterCredentials {
-    username: string;
     email: string;
     password: string;
-    confirmPassword: string;
+    username: string;
+    role: 'user' | 'admin';
   }
   

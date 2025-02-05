@@ -1,19 +1,25 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, AuthTokens, RegisterCredentials } from '../types/auth';
+import { User, AuthResponse, RegisterCredentials, LoginCredentials } from '../types/auth';
 import * as authApi from '../api/auth';
+import { AxiosError } from 'axios';
 
 interface AuthState {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
+  accessTokenExpiresAt: number | null;
+  refreshTokenExpiresAt: number | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  setLoading: (loading: boolean) => void;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  refreshTokens: () => Promise<boolean>;
+  setAuth: (response: AuthResponse) => Partial<AuthState>;
+  clearAuth: () => Partial<AuthState>;
+  login: (credentials: LoginCredentials) => Promise<void>;
   register: (credentials: RegisterCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+  updateAccessToken: (response: AuthResponse) => void;
+  refreshTokens: () => Promise<boolean>;
+  handleAuthError: (error: unknown) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -22,38 +28,95 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       refreshToken: null,
+      accessTokenExpiresAt: null,
+      refreshTokenExpiresAt: null,
       isAuthenticated: false,
-      isLoading: true,
-      
-      setLoading: (loading: boolean) => set({ isLoading: loading }),
+      isLoading: false,
 
-      register: async (credentials: RegisterCredentials) => {
+      setAuth: (response: AuthResponse) => {
+        const now = Date.now();
+        const newState = {
+          user: response.user,
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          accessTokenExpiresAt: now + response.accessTokenExpiresIn,
+          refreshTokenExpiresAt: now + response.refreshTokenExpiresIn,
+          isAuthenticated: true,
+        };
+        set(newState);
+        return newState;
+      },
+
+      clearAuth: () => {
+        const newState = {
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          accessTokenExpiresAt: null,
+          refreshTokenExpiresAt: null,
+          isAuthenticated: false,
+        };
+        set(newState);
+        return newState;
+      },
+
+      updateAccessToken: (response: AuthResponse) => {
+        const now = Date.now();
+        set({
+          accessToken: response.accessToken,
+          refreshToken: response.refreshToken,
+          accessTokenExpiresAt: now + response.accessTokenExpiresIn,
+          refreshTokenExpiresAt: now + response.refreshTokenExpiresIn,
+        });
+      },
+
+      handleAuthError: (error: unknown) => {
+        const isAxiosError = error instanceof AxiosError;
+        if (isAxiosError && error.response?.status === 401) {
+          get().clearAuth();
+        }
+        console.error('Auth error:', error);
+        throw error;
+      },
+
+      refreshTokens: async () => {
+        const { refreshToken, refreshTokenExpiresAt } = get();
+        const now = Date.now();
+
+        if (!refreshToken || !refreshTokenExpiresAt || refreshTokenExpiresAt < now) {
+          get().clearAuth();
+          return false;
+        }
+
+        try {
+          const response = await authApi.refreshAccessToken(refreshToken);
+          get().setAuth(response);
+          return true;
+        } catch (error) {
+          get().handleAuthError(error);
+          return false;
+        }
+      },
+
+      login: async (credentials: LoginCredentials) => {
         try {
           set({ isLoading: true });
-          await authApi.register(credentials);
+          const response = await authApi.login(credentials);
+          get().setAuth(response);
         } catch (error) {
-          console.error('Registration failed:', error);
-          throw error;
+          get().handleAuthError(error);
         } finally {
           set({ isLoading: false });
         }
       },
-      
 
-      login: async (email: string, password: string) => {
+      register: async (credentials: RegisterCredentials) => {
         try {
           set({ isLoading: true });
-          const tokens = await authApi.login({ email, password });
-          const user = await authApi.getUser();
-          set({
-            user,
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
-            isAuthenticated: true,
-          });
+          const response = await authApi.register(credentials);
+          get().setAuth(response);
         } catch (error) {
-          console.error('Login failed:', error);
-          throw error;
+          get().handleAuthError(error);
         } finally {
           set({ isLoading: false });
         }
@@ -63,44 +126,9 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true });
           await authApi.logout();
-          set({
-            user: null,
-            accessToken: null,
-            refreshToken: null,
-            isAuthenticated: false,
-          });
-        } catch (error) {
-          console.error('Logout failed:', error);
-          throw error;
+          get().clearAuth();
         } finally {
           set({ isLoading: false });
-        }
-      },
-
-      refreshTokens: async () => {
-        try {
-          const refreshToken = get().refreshToken;
-          if (!refreshToken) {
-            set({ isLoading: false });
-            return false;
-          }
-
-          const tokens = await authApi.refreshAccessToken(refreshToken);
-          set({
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
-            isAuthenticated: true,
-          });
-          return true;
-        } catch (error) {
-          console.error('Token refresh failed:', error);
-          set({
-            user: null,
-            accessToken: null,
-            refreshToken: null,
-            isAuthenticated: false,
-          });
-          return false;
         }
       },
     }),
@@ -108,6 +136,7 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       partialize: (state) => ({
         refreshToken: state.refreshToken,
+        refreshTokenExpiresAt: state.refreshTokenExpiresAt,
       }),
     }
   )

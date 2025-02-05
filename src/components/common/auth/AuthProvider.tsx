@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import { useAuthStore } from '../../../states/authStore';
-import { Loading } from '../Loading';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { refreshTokens, setLoading } = useAuthStore();
+  const { refreshTokens, isLoading } = useAuthStore();
 
   useEffect(() => {
     const initAuth = async () => {
@@ -12,7 +11,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (error) {
         console.error('Auth initialization failed:', error);
       } finally {
-        setLoading(false);
+        !isLoading;
       }
     };
 

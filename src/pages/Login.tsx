@@ -3,21 +3,17 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { PageLayout } from '../layouts/PageLayout';
 import { useAuthStore } from '../states/authStore';
-
-interface LoginFormData {
-  email: string;
-  password: string;
-}
+import { LoginCredentials } from '../types/auth';
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuthStore();
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>();
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginCredentials>();
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: LoginCredentials) => {
     try {
-      await login(data.email, data.password);
+      await login(data);
       
       // 이전 페이지로 리다이렉트 또는 홈으로 이동
       const from = location.state?.from?.pathname || '/';
